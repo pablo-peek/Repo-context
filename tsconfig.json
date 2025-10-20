@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "es2016",
+    "module": "commonjs",
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "sourceMap": true,  
+    "outDir": "dist",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "alwaysStrict": true,
+    "skipLibCheck": true
+  },
+  "compileOnSave": true,
+  "include": ["src/**/*"],
+  "exclude": ["./src/__tests__/**", "./src/**/*.spec.ts", "./src/**/*.mock.ts", "node_modules"]
+}

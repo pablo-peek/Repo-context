@@ -65,6 +65,26 @@ All these tools are available directly from VS Code, making it easy to understan
 
 ---
 
+## 🎯 Example: Instantly Discover What an Endpoint Expects
+
+With Repo Context MCP, you can analyze TypeScript repositories and ask very specific questions about API endpoints—like what object and types you need to send for a successful request.
+
+**For example:**
+
+> “What do I need to send to `POST /users/register` to create a new user?”
+
+Repo Context MCP will analyze the source code and provide the exact JSON structure and TypeScript types required, including enums and nested objects.  
+This means you’ll know precisely what to send, without wasting time guessing or searching through documentation.
+
+**This is a huge productivity boost for developers:**
+- Instantly discover endpoint payloads and types
+- Avoid trial-and-error and failed requests
+- Integrate faster with any backend, even private APIs
+
+If you need concrete examples or want to see the payload for any endpoint, just ask—Repo Context MCP will extract it directly.
+
+---
+
 ## 🔗 Integration
 
 Register this MCP server as a context provider in your `mcp.json`:

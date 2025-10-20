@@ -1,20 +1,47 @@
-# READ REPO TO GET CONTEXT MCP
+# Repo Context MCP 🚀
 
-This repository provides an MCP (Model Context Protocol) server that allows you to explore and analyze the contents and structure of any code repository. It exposes tools to list files, read file contents, and extract type and function information from TypeScript or JavaScript files, making it easier to understand and document codebases programmatically.
+> **Explore and analyze any code repository—locally or remotely—directly from VS Code.**
 
-## Installation & Usage
+---
 
-1. **Install dependencies:**
+## 🚀 Why Use Repo-context-mcp?
+
+See the difference when working in VS Code **without** and **with** this tool:
+
+|                | ❌ Without Repo-context-mcp                | ✅ With Repo-context-mcp                       |
+|----------------|-------------------------------------------|------------------------------------------------|
+| 🔍 Explore repo structure | Manually browse files and folders | Instantly list files and folders in any repo   |
+| 📄 Read file contents     | Open files one by one             | Read any file’s content with a single command  |
+| 🧑‍💻 Analyze code         | Manually inspect/export functions | Get exported functions and types automatically |
+| 🔒 Private/public repos   | Need to clone and set up locally  | Analyze local or remote (even private) repos   |
+| ⚡ GitHub endpoints       | Manual API calls or cloning       | Fetch files and metadata without cloning       |
+
+---
+
+## ✨ Features
+
+- 📂 **List files and folders** in any repo (local or GitHub)
+- 📄 **Read file contents** instantly
+- 🧑‍💻 **Analyze exported functions and types** from TypeScript/JavaScript files
+- 🔒 **Works with private and public repositories**
+- ⚡ **No need to clone**: fetch files and metadata from GitHub endpoints
+
+---
+
+## 🛠️ Installation
+
+1. **Install in VS Code**  
+   > Open your workspace and run:
    ```sh
    npm install
    ```
 
-2. **Build the project:**
+2. **Build the project**
    ```sh
    npm run build
    ```
 
-3. **Start the server in development mode:**
+3. **Start the server in development mode**
    ```sh
    npm run start:dev
    ```
@@ -23,57 +50,74 @@ This repository provides an MCP (Model Context Protocol) server that allows you 
    npm start
    ```
 
-4. **Usage:**
-   - Use the MCP tools to:
-     - Set the repository path you want to analyze.
-     - List files and folders.
-     - Read file contents.
-     - Analyze TypeScript/JavaScript files to extract exported functions and their type information.
+---
 
-5. **Integration:**
-   - Register this MCP server as a context provider in your `mcp.json`:
-     ```json
-     {
-       "servers": {
-        "repo-context-mcp": {
-        "command": "npx",
-        "args": [
-            "ts-node",
-            "/home/pablo/Apps/read-repo-to-get-context-mcp/src/index.ts"
-        ],
-        "type": "stdio",
-        			"env": {
-				"ENVIRONMENT": "local",
-				"GITHUB_TOKEN":"",
-				"GITHUB_NAME": ""
-  			}
-        }
-       }
-     }
-     ```
+## 🚦 How It Works
 
-## Analyzing Private and Local Repositories
+With this MCP server, you can:
 
-You can use this MCP server to analyze:
+- Set the repository path you want to analyze (local or remote)
+- List files and folders
+- Read file contents
+- Analyze TypeScript/JavaScript files to extract exported functions and their type information
 
-- **Local repositories**: Set the path to your local repo using the `setRepoPath` tool.
-- **Private GitHub repositories**: Add your GitHub username and token to the environment variables in your MCP server configuration (see `mcp.json`):
+All these tools are available directly from VS Code, making it easy to understand and document codebases while you work.
+
+---
+
+## 🔗 Integration
+
+Register this MCP server as a context provider in your `mcp.json`:
+
+```json
+{
+  "servers": {
+    "repo-context-mcp": {
+      "command": "npx",
+      "args": [
+        "ts-node",
+        "/home/pablo/Apps/repo-context/src/index.ts"
+      ],
+      "type": "stdio",
+      "env": {
+        "ENVIRONMENT": "local",
+        "GITHUB_TOKEN": "",
+        "GITHUB_NAME": ""
+      }
+    }
+  }
+}
+```
+
+---
+
+## 🔒 Analyzing Private and Local Repositories
+
+- **Local repositories**: Set the path using the `setRepoPath` tool.
+- **Private GitHub repositories**: Add your GitHub username and token to the environment variables in your MCP server configuration (`mcp.json`):
+
   ```json
   "env": {
     "GITHUB_TOKEN": "<your-github-token>",
     "GITHUB_NAME": "<your-github-username>"
   }
   ```
+
   Then, use the tools to fetch and analyze files from the private repo by specifying the repo owner, name, and file path.
 
-**Note:** For private GitHub repos, you must manually provide your GitHub credentials in the configuration. For local repos, simply pass the local path.
+> **Note:** For private GitHub repos, provide your GitHub credentials in the configuration. For local repos, simply pass the local path.
 
-## Requirements
+---
+
+## 📦 Requirements
 
 - Node.js 18+
 - npm
 
-## Notes
+---
 
-- You can dynamically set the repository to analyze using the `setRepoPath` tool.
+## 💡 Notes
+
+- Dynamically set the repository to analyze using the `setRepoPath` tool.
 - The server exposes tools for file exploration and type analysis, making it ideal for code understanding and documentation.
+- You can fetch files and metadata from GitHub endpoints without cloning

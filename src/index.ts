@@ -320,6 +320,50 @@ server.tool(
   }
 );
 
+export const getSwaggerSpecSchema = z.object({
+  path: z.string().optional().describe("Relative path to the Swagger/OpenAPI file (default: looks for common names in root and docs)")
+});
+export type GetSwaggerSpecParams = z.infer<typeof getSwaggerSpecSchema>;
+
+server.tool(
+  "getSwaggerSpec",
+  "Read the Swagger/OpenAPI specification file (swagger.json, openapi.json, openapi.yaml, etc.) from the active repo.",
+  getSwaggerSpecSchema.shape,
+  async ({ path }: GetSwaggerSpecParams) => {
+    if (!repoPath) throw new Error('Repo path not set. Use setRepoPath first.');
+    const candidates = path
+      ? [path]
+      : [
+          'swagger.json',
+          'swagger.yaml',
+          'openapi.json',
+          'openapi.yaml',
+          'docs/swagger.json',
+          'docs/swagger.yaml',
+          'docs/openapi.json',
+          'docs/openapi.yaml',
+        ];
+    let found = '';
+    for (const candidate of candidates) {
+      try {
+        const filePath = join(repoPath, candidate);
+        const content = readFileSync(filePath, 'utf8');
+        found = candidate;
+        return {
+          content: [
+            { type: 'text', text: `Swagger/OpenAPI spec found at: ${candidate}\n\n${content}` },
+          ],
+        };
+      } catch {}
+    }
+    return {
+      content: [
+        { type: 'text', text: 'No Swagger/OpenAPI spec file found in the usual locations.' },
+      ],
+    };
+  }
+);
+
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);

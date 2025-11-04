@@ -143,7 +143,7 @@ server.tool(
       };
     }
 
-    const exportRegex = /export\s+(?:async\s+)?function\s+(\w+)\s*\(([^)]*)\)\s*(:\s*([^{\n]+))?/g;
+    const exportRegex = /export\s+(?:async\s+)?function\s+(\w+)\s*\(([^)]*)\)\s*(:\s*([^\{\n]+))?/g;
     const matches = [...content.matchAll(exportRegex)];
     if (matches.length === 0) {
       return {
@@ -316,6 +316,125 @@ server.tool(
           { type: 'text', text: 'Error fetching file from GitHub: ' + (String(err)) },
         ],
       };
+    }
+  }
+);
+
+export const listPullRequestsSchema = z.object({
+  owner: z.string().describe('GitHub repository owner'),
+  repo: z.string().describe('GitHub repository name'),
+  state: z.enum(['open','closed','all']).optional().describe('Filter by state'),
+  per_page: z.number().int().min(1).max(100).optional().describe('Results per page (default 30)'),
+  page: z.number().int().min(1).optional().describe('Page number (default 1)')
+});
+export type ListPullRequestsParams = z.infer<typeof listPullRequestsSchema>;
+
+export const getPullRequestFilesSchema = z.object({
+  owner: z.string().describe('GitHub repository owner'),
+  repo: z.string().describe('GitHub repository name'),
+  number: z.number().int().describe('Pull request number')
+});
+export type GetPullRequestFilesParams = z.infer<typeof getPullRequestFilesSchema>;
+
+export const getPullRequestDiffSchema = z.object({
+  owner: z.string().describe('GitHub repository owner'),
+  repo: z.string().describe('GitHub repository name'),
+  number: z.number().int().describe('Pull request number')
+});
+export type GetPullRequestDiffParams = z.infer<typeof getPullRequestDiffSchema>;
+
+server.tool(
+  'listPullRequests',
+  'List pull requests for a repository',
+  listPullRequestsSchema.shape,
+  async ({ owner, repo, state = 'open', per_page = 30, page = 1 }: ListPullRequestsParams) => {
+    const token = process.env.GITHUB_TOKEN;
+    if (!token) {
+      return { content: [{ type: 'text', text: 'GITHUB_TOKEN not set.' }] };
+    }
+    const url = `https://api.github.com/repos/${owner}/${repo}/pulls?state=${state}&per_page=${per_page}&page=${page}`;
+    const headers = {
+      'Authorization': `token ${token}`,
+      'Accept': 'application/vnd.github.v3+json',
+      'User-Agent': process.env.GITHUB_NAME || 'repo-context-mcp'
+    };
+    try {
+      const response = await fetch(url, { headers });
+      if (!response.ok) {
+        return { content: [{ type: 'text', text: `GitHub API error: ${response.status} ${response.statusText}` }] };
+      }
+      const prs = await response.json();
+      if (!Array.isArray(prs) || prs.length === 0) {
+        return { content: [{ type: 'text', text: 'No pull requests found.' }] };
+      }
+      const list = prs.map((pr: any) => `#${pr.number} ${pr.title} | ${pr.state} | author:${pr.user?.login} | base:${pr.base?.ref} -> head:${pr.head?.ref}`).join('\n');
+      return { content: [{ type: 'text', text: list }] };
+    } catch (err) {
+      return { content: [{ type: 'text', text: 'Error listing PRs: ' + String(err) }] };
+    }
+  }
+);
+
+server.tool(
+  'getPullRequestFiles',
+  'List changed files in a pull request (includes additions, deletions, patch)',
+  getPullRequestFilesSchema.shape,
+  async ({ owner, repo, number }: GetPullRequestFilesParams) => {
+    const token = process.env.GITHUB_TOKEN;
+    if (!token) {
+      return { content: [{ type: 'text', text: 'GITHUB_TOKEN not set.' }] };
+    }
+    const url = `https://api.github.com/repos/${owner}/${repo}/pulls/${number}/files`;
+    const headers = {
+      'Authorization': `token ${token}`,
+      'Accept': 'application/vnd.github.v3+json',
+      'User-Agent': process.env.GITHUB_NAME || 'repo-context-mcp'
+    };
+    try {
+      const response = await fetch(url, { headers });
+      if (!response.ok) {
+        return { content: [{ type: 'text', text: `GitHub API error: ${response.status} ${response.statusText}` }] };
+      }
+      const files = await response.json();
+      if (!Array.isArray(files) || files.length === 0) {
+        return { content: [{ type: 'text', text: 'No changed files in this PR.' }] };
+      }
+      const out = files.map((f: any) => {
+        const patch = typeof f.patch === 'string' ? f.patch.split('\n').slice(0, 60).join('\n') : '';
+        return `• ${f.filename} (+${f.additions} -${f.deletions}) status:${f.status}${patch ? '\nPatch:\n' + patch : ''}`;
+      }).join('\n\n');
+      return { content: [{ type: 'text', text: out }] };
+    } catch (err) {
+      return { content: [{ type: 'text', text: 'Error fetching PR files: ' + String(err) }] };
+    }
+  }
+);
+
+server.tool(
+  'getPullRequestDiff',
+  'Get unified diff for a pull request',
+  getPullRequestDiffSchema.shape,
+  async ({ owner, repo, number }: GetPullRequestDiffParams) => {
+    const token = process.env.GITHUB_TOKEN;
+    if (!token) {
+      return { content: [{ type: 'text', text: 'GITHUB_TOKEN not set.' }] };
+    }
+    const url = `https://api.github.com/repos/${owner}/${repo}/pulls/${number}`;
+    const headers = {
+      'Authorization': `token ${token}`,
+      'Accept': 'application/vnd.github.v3.diff',
+      'User-Agent': process.env.GITHUB_NAME || 'repo-context-mcp'
+    };
+    try {
+      const response = await fetch(url, { headers });
+      if (!response.ok) {
+        return { content: [{ type: 'text', text: `GitHub API error: ${response.status} ${response.statusText}` }] };
+      }
+      const diffText = await response.text();
+      const truncated = diffText.length > 20000 ? diffText.slice(0, 20000) + '\n...[truncated]...' : diffText;
+      return { content: [{ type: 'text', text: truncated }] };
+    } catch (err) {
+      return { content: [{ type: 'text', text: 'Error fetching PR diff: ' + String(err) }] };
     }
   }
 );

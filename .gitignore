@@ -119,6 +119,7 @@ out
 
 .nuxt
 dist
+.tgz
 
 # Gatsby files
 

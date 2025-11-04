@@ -1,18 +1,26 @@
 {
-  "name": "repo-context-mcp",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "@pablopeek/repo-context-mcp",
+  "version": "1.0.1",
+  "description": "MCP tool to extract context from a GitHub repository for AI applications.",
+  "main": "dist/index.js",
   "scripts": {
     "lint": "tsc --noEmit && eslint \"**/*.{js,ts}\" --quiet --fix",
     "start": "node dist/index",
     "start:dev": "ENVIRONMENT='local' ts-node src/index.ts",
-    "build": "rm -rf dist/* && tsc --sourceMap false"
+    "build": "rm -rf dist/* && tsc --sourceMap false",
+    "prepublishOnly": "npm run build",
+    "postbuild": "sed -i '1s;^;#!/usr/bin/env node\\n;' dist/index.js && chmod +x dist/index.js"
   },
-  "keywords": [],
-  "author": "",
+  "bin": { "repo-context-mcp": "dist/index.js" },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "ai",
+    "discovery",
+    "recommendation"
+  ],
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "devDependencies": {
     "@types/node": "^24.9.0",
     "ts-node": "^10.9.2",
@@ -24,5 +32,16 @@
     "fs-extra": "^11.3.2",
     "path": "^0.12.7",
     "ts-morph": "^27.0.2"
-  }
+  },
+  "files":[
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "bugs": {
+    "url": "https://github.com/pablo-peek/Repo-context/issues"
+  },
+  "homepage": "https://github.com/pablo-peek/Repo-context#readme"
 }
